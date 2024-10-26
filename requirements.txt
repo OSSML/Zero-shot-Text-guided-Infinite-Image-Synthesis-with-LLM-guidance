@@ -1,0 +1,6 @@
+# torch
+pandas
+numpy
+diffusers
+transformers
+accelerate
