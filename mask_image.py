@@ -1,5 +1,3 @@
-from multiprocessing.managers import Value
-
 import requests
 from PIL import Image, ImageDraw
 from io import BytesIO
@@ -68,7 +66,7 @@ def create_mask_overlay_inference(image_path, direction='right'):
         # │ New Size: (512, hsize)   │  ← Resulting size after resizing
         # └───────────────────────────┘
 
-        # Crop image if direction is 'top' or 'bottom'
+        # Crop image based on direction
         if direction == 'top':
             image = image.crop((0, 0, base_width, min(512, hsize)))
             # ┌─────────────────────┐
@@ -98,7 +96,7 @@ def create_mask_overlay_inference(image_path, direction='right'):
         # │ New Size: (wsize, 512)   │  ← Resulting size after resizing
         # └──────────────────────────┘
 
-        # Crop image if direction is 'left' or 'right'
+        # Crop image based on direction
         if direction == 'left':
             image = image.crop((0, 0, min(512, wsize), base_height))
             # ┌────────────────────┐
@@ -109,42 +107,53 @@ def create_mask_overlay_inference(image_path, direction='right'):
             # ┌─────────────────────┐
             # │ Crop from the right │  ← Keep only the right 512 pixels in width
             # └─────────────────────┘
+    else:
+        raise ValueError("direction must be in ['right', 'left', 'top', 'bottom']")
 
     print("after cropping size: ", image.size)
-    image.show(title=direction)
+    # image.show(title=direction)
 
     if direction in ['left', 'right']:
-        extended_size = (758, 512)
+        extended_size = (min(758, image.size[0]+246), 512)
     else:
-        extended_size = (512, 758)
+        extended_size = (512, min(758, image.size[1]+246))
 
+    print(f"{extended_size=}")
     extended_image = Image.new("RGB", extended_size, (0, 0, 0, 0))
 
     if direction == 'right':
         extended_image.paste(image, (0, 0))
-        mask_position = (512, 0, 758, 512)
+        mask_position = (image.size[0], 0, image.size[0] + 246, image.size[1])
     elif direction == 'left':
         extended_image.paste(image, (246, 0))
-        mask_position = (0, 0, 246, 512)
+        mask_position = (0, 0, 246, image.size[1])
     elif direction == 'top':
         extended_image.paste(image, (0, 246))
-        mask_position = (0, 0, 512, 246)
+        mask_position = (0, 0, image.size[0], 246)
     elif direction == 'bottom':
         extended_image.paste(image, (0, 0))
-        mask_position = (0, 512, 512, 758)
+        mask_position = (0, image.size[1], image.size[0], image.size[1]+246)
     else:
         raise ValueError("direction must be in ['right', 'left', 'top', 'bottom']")
 
     draw = ImageDraw.Draw(extended_image)
     fill = (0, 0, 0, 255)
     draw.rectangle(mask_position, fill=fill)
+    # extended_image.show()
 
-    return extended_image
+    mask = Image.new("RGB", extended_image.size)
+    mask_draw = ImageDraw.Draw(mask)
+    mask_draw.rectangle(mask_position, fill="white")
+    # mask.show()
+
+    return extended_image, mask
 
 if __name__ == "__main__":
-    for dire in ['right', 'left', 'top', 'bottom']:
+    # for dire in ['right', 'left', 'top', 'bottom']:
+    for dire in ['top']:
         print(f"\ndirection: {dire}")
         # image = create_mask_overlay_inference(r"https://raw.githubusercontent.com/CompVis/stable-diffusion/main/assets/stable-samples/img2img/sketch-mountains-input.jpg", dire)
-        image = create_mask_overlay_inference("https://images.ctfassets.net/hrltx12pl8hq/28ECAQiPJZ78hxatLTa7Ts/2f695d869736ae3b0de3e56ceaca3958/free-nature-images.jpg", dire)
-        # image.show(dire)
+        image, mask = create_mask_overlay_inference("https://images.ctfassets.net/hrltx12pl8hq/28ECAQiPJZ78hxatLTa7Ts/2f695d869736ae3b0de3e56ceaca3958/free-nature-images.jpg", dire)
+        image.show(title=str(dire))
+        mask.show(title=str(dire))
     # image.show()
