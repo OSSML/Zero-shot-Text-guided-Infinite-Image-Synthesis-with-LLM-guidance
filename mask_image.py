@@ -1,5 +1,5 @@
 import requests
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 from io import BytesIO
 
 
@@ -123,7 +123,6 @@ def create_mask_overlay_inference(image, direction='right'):
     image = crop_image_dir(image, direction)
 
     # print("after cropping size: ", image.size)
-    # image.show(title=direction)
 
     mask_size = 256
 
@@ -161,6 +160,52 @@ def create_mask_overlay_inference(image, direction='right'):
     # mask.show()
 
     return extended_image, mask
+
+def create_mask_overlay_inference_v2(image, direction='right'):
+    # image.show()
+    # print("Original size: ", image.size)
+    # ┌──────────────┐
+    # │   w, h       │  ← Width and height of the image
+    # └──────────────┘
+
+    image = resize_img(image, direction)
+    image = crop_image_dir(image, direction)
+
+    duplicate = image.copy()
+    duplicate = duplicate.filter(ImageFilter.GaussianBlur(radius = 7))
+    if direction in ['right', 'left']:
+        duplicate = duplicate.transpose(Image.FLIP_LEFT_RIGHT)
+    else:
+        duplicate = duplicate.transpose(Image.FLIP_TOP_BOTTOM)
+
+    if direction in ['left', 'right']:
+        extended_size = (image.size[0]+duplicate.size[0], 512)
+    else:
+        extended_size = (512, image.size[1]+duplicate.size[1])
+
+    white = Image.new("RGB", duplicate.size, color="white")
+    black = Image.new("RGB", image.size, color="black")
+
+
+    # print(f"{extended_size=}")
+    extended_image = Image.new("RGB", extended_size, (0, 0, 0, 0))
+
+    if direction == 'right':
+        result = get_concat_h(image, duplicate)
+        mask = get_concat_h(black, white)
+    elif direction == 'left':
+        result = get_concat_h(duplicate, image)
+        mask = get_concat_h(white, black)
+    elif direction == 'top':
+        result = get_concat_v(duplicate, image)
+        mask = get_concat_v(white, black)
+    elif direction == 'bottom':
+        result = get_concat_v(image, duplicate)
+        mask = get_concat_v(black, white)
+    else:
+        raise ValueError("direction must be in ['right', 'left', 'top', 'bottom']")
+    return result, mask
+
 
 def get_concat_h(im1, im2):
     dst = Image.new('RGB', (im1.width + im2.width, im1.height))
@@ -203,15 +248,21 @@ def attach_image(original, inference: Image, direction: str):
 
 
 if __name__ == "__main__":
-    # for dire in ['right', 'left', 'top', 'bottom']:
+    image_path = r"https://c4.wallpaperflare.com/wallpaper/297/288/1009/5bd320d590bcf-wallpaper-preview.jpg"
+    image = load_img(image_path)
+    for dire in ['right', 'left', 'top', 'bottom']:
     # for dire in ['top']:
-    #     print(f"\ndirection: {dire}")
+        print(f"\ndirection: {dire}")
+        image1, mask = create_mask_overlay_inference_v2(image, dire)
+        image1.show()
+        mask.show()
     #     # image = create_mask_overlay_inference(r"https://raw.githubusercontent.com/CompVis/stable-diffusion/main/assets/stable-samples/img2img/sketch-mountains-input.jpg", dire)
     #     image, mask = create_mask_overlay_inference("https://images.ctfassets.net/hrltx12pl8hq/28ECAQiPJZ78hxatLTa7Ts/2f695d869736ae3b0de3e56ceaca3958/free-nature-images.jpg", dire)
     #     image.show(title=str(dire))
     #     mask.show(title=str(dire))
-    image_path = 'testing.png'
-    original = load_img(r"C:\Users\Dinesh\Videos\Red Dead Redemption 2\Red Dead Redemption 2 Screenshot 2024.10.22 - 15.56.02.74.png")
-    inference = load_img('testing.png')
-    attach_image(original, inference, 'left')
+
+
+    # original = load_img(r"C:\Users\Dinesh\Videos\Red Dead Redemption 2\Red Dead Redemption 2 Screenshot 2024.10.22 - 15.56.02.74.png")
+    # inference = load_img('testing.png')
+    # attach_image(original, inference, 'left')
     # image.show()
