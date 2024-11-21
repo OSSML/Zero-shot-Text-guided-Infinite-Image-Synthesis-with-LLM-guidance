@@ -14,11 +14,6 @@ def run(image, prompt, direction, similar_color, num_images):
             outputs[i] = model.inference(image=outputs[i], direction=dire, prompt=prompt, similar_color=similar_color)
     return outputs
 
-# app = gr.Interface(
-#     fn=run,
-#     inputs=[gr.Image(), "text", gr.Dropdown(['left', 'right', 'top', 'bottom']), "checkbox"],
-#     outputs=gr.Gallery()
-#     )
 
 with gr.Blocks(fill_width=True) as app:
     with gr.Row():
@@ -39,4 +34,4 @@ with gr.Blocks(fill_width=True) as app:
         outputs
     )
 
-app.launch()
+app.launch(share=True)
