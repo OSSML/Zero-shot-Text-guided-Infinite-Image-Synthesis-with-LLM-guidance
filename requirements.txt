@@ -1,6 +1,7 @@
-# torch
+torch
 pandas
 numpy
 diffusers
 transformers
 accelerate
+gradio
