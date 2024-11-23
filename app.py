@@ -35,4 +35,4 @@ with gr.Blocks(fill_width=True) as app:
         outputs
     )
 
-app.launch()
+app.launch(share=True)
