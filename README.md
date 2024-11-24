@@ -59,7 +59,7 @@ This project utilizes the Stable Diffusion model to extend images based on user-
 - **Deployment**: The system runs entirely within Google Colab for easy setup and execution.
 
 ## Project Link
-[Google Colab Notebook](<INSERT_LINK_HERE>)
+[Google Colab Notebook](https://colab.research.google.com/drive/1_b1qeCJO_y6f0H5_76dyjx3UAONKR2rJ)
 
 ## License
 ![License](https://img.shields.io/github/license/OSSML/Zero_shot_Image_Synthesis)  
