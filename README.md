@@ -51,6 +51,17 @@ This project utilizes the Stable Diffusion model to extend images based on user-
 - Output: 
 
   ![image(1)](https://github.com/user-attachments/assets/8603eb30-64ce-42e8-98e0-e803b27241f7)
+
+- Input: 
+    - Image : ![WhatsApp Image 2024-11-25 at 09 24 57_02889559](https://github.com/user-attachments/assets/92ce4002-6d09-4caf-8ac3-d9668e77eb08)
+
+
+    - Prompt : coffee shop 
+    - Directions : `top`
+- Output: 
+
+  ![image(2)](https://github.com/user-attachments/assets/93a640d0-ea4f-4ea0-9e22-834dccb7ed35)
+
 ------
 
 ## Technical Details
